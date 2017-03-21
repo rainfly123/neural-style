@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+ 
+ 
+<head>     
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />     
+<title>图片上传本地预览</title>     
+<style type="text/css">
+#preview{width:260px;height:190px;border:1px solid #000;overflow:hidden;}
+#imghead {filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod=image);}
+</style>
+<script type="text/javascript">
+ 
+ 
+                //图片上传预览    IE是用了滤镜。
+        function previewImage(file, did, iid)
+        {
+          var MAXWIDTH  = 260; 
+          var MAXHEIGHT = 180;
+          var div = document.getElementById(did);
+          if (file.files && file.files[0])
+          {
+            //  div.innerHTML ='<img id=imghead>';
+              var img = document.getElementById(iid);
+              img.onload = function(){
+                var rect = clacImgZoomParam(MAXWIDTH, MAXHEIGHT, img.offsetWidth, img.offsetHeight);
+                img.width  =  rect.width;
+                img.height =  rect.height;
+//                 img.style.marginLeft = rect.left+'px';
+                img.style.marginTop = rect.top+'px';
+              }
+              var reader = new FileReader();
+              reader.onload = function(evt){img.src = evt.target.result;}
+              reader.readAsDataURL(file.files[0]);
+          }
+          else //兼容IE
+          {
+           /*
+            var sFilter='filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod=scale,src="';
+            file.select();
+            var src = document.selection.createRange().text;
+            //div.innerHTML = '<img id=imghead>';
+            var img = document.getElementById('imghead');
+            img.filters.item('DXImageTransform.Microsoft.AlphaImageLoader').src = src;
+            var rect = clacImgZoomParam(MAXWIDTH, MAXHEIGHT, img.offsetWidth, img.offsetHeight);
+            status =('rect:'+rect.top+','+rect.left+','+rect.width+','+rect.height);
+            div.innerHTML = "<div id=divhead style='width:"+rect.width+"px;height:"+rect.height+"px;margin-top:"+rect.top+"px;"+sFilter+src+"\"'></div>";
+            */
+          }
+        }
+        function clacImgZoomParam( maxWidth, maxHeight, width, height ){
+            var param = {top:0, left:0, width:width, height:height};
+            if( width>maxWidth || height>maxHeight )
+            {
+                rateWidth = width / maxWidth;
+                rateHeight = height / maxHeight;
+                 
+                if( rateWidth > rateHeight )
+                {
+                    param.width =  maxWidth;
+                    param.height = Math.round(height / rateWidth);
+                }else
+                {
+                    param.width = Math.round(width / rateHeight);
+                    param.height = maxHeight;
+                }
+            }
+             
+            param.left = Math.round((maxWidth - param.width) / 2);
+            param.top = Math.round((maxHeight - param.height) / 2);
+            return param;
+        }
+</script>     
+</head>     
+<body>
+<div id="preview">
+<img id="imghead" width=260 height=180 border=0 src='<%=request.getContextPath()%>/images/defaul.jpg'>
+</div>
+
+ 
+     
+ <form action="localhost/writev2?scale=x&weight=x" id="myform" method="post" enctype="multipart/form-data" name="origin">
+  <label>选择原图片</label>
+  <input name="file0" type="file" accept="image/png, image/jpeg" onchange="previewImage(this, 'preview','imghead')" />     
+
+<div id="previeww">
+<img id="imgheadd" width=260 height=180 border=0 src='<%=request.getContextPath()%>/images/defaul.jpg'>
+</div>
+
+  <label>选择风格图片</label>
+  <input name="file1" type="file" accept="image/png, image/jpeg" onchange="previewImage(this,'previeww','imgheadd')" />     
+</form>
+
+<br>风格倍数</br>
+<select id="Select1" onchange="getSelectValue(this);">
+        <option value="0.5">0.5</option>
+        <option value="0.6">0.6</option>
+        <option value="0.7">0.7</option>
+        <option value="0.8">0.8</option>
+        <option value="0.9">0.9</option>
+        <option selected value="1.0">1.0</option>
+        <option value="1.1">1.1</option>
+        <option value="1.2">1.2</option>
+        <option value="1.3">1.3</option>
+        <option value="1.4">1.4</option>
+        <option value="1.5">1.5</option>
+    </select>
+<br>风格权重</br>
+<select id="Select2" onchange="getSelectValue(this);">
+        <option value="10">10</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="200">200</option>
+        <option selected value="300">300</option>
+        <option value="400">400</option>
+        <option value="500">500</option>
+        <option value="600">600</option>
+    </select>
+<!-- 
+    <br /><br /><br />您选择的是：
+    <span id="selectValue"></span>
+    
+    <script language="javascript" type="text/javascript">
+        function getSelectValue(obj) {
+            var sValue = obj.options[obj.options.selectedIndex].value; //这是取值
+            var sText = obj.options[obj.options.selectedIndex].innerHTML; //这是取文本内容
+            document.getElementById("selectValue").innerHTML = sText + "，他的值为：" + sValue; //测试输出
+        }
+    </script>
+-->
+<br>
+<button onclick="process()"> 处理图片</button>
+   
+    <script language="javascript" type="text/javascript">
+        function process() {
+         //   document.getElementById("selectValue").innerHTML = "风格倍数:" + document.getElementById("Select1").value
+          //+ "  风格权重:" + document.getElementById("Select2").value
+            var scale = document.getElementById("Select1").value;
+            var weight = document.getElementById("Select2").value;
+            document.getElementById("myform").action="http://localhost:8080/writev2?scale=" + scale + "&weight=" + weight;
+            alert("处理中...请等待");
+            document.getElementById("myform").submit();    
+        }
+    </script>
+
+</br>
+
+</body>     
+</html>
